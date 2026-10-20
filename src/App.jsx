@@ -38,4 +38,8 @@ function AuthScreen({ onAuth }) {
     <section className="auth-card">
       <div className="brand"><div className="brand-icon"><Lightbulb size={30}/></div><div><b>فكرتك مشروعك</b><small>من فكرة إلى مشروع</small></div></div>
       <h1>{mode === 'login' ? 'مرحباً بك' : 'إنشاء حساب جديد'}</h1>
-      <p className="muted">{mode === 'login' ? 'سجل الدخول للمتابعة'
+      <p className="muted">{mode === 'login' ? 'سجل الدخول للمتابعة' : 'أنشئ حسابك وابدأ رحلتك'}</p>
+      <form onSubmit={submit}>
+        {mode === 'register' && <label>الاسم<input value={name} onChange={e=>setName(e.target.value)} placeholder="اكتب اسمك" required/></label>}
+        <label>البريد الإلكتروني<input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="example@email.com" required/></label>
+        <label>كلمة المرور<input type="passw
