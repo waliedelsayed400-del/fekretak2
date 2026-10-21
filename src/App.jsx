@@ -386,6 +386,55 @@ export default function App() {
           <div className="fk-post" key={p.id}><h3>{p.title}</h3><span className="fk-small">{p.author}</span><p style={{ marginTop: 6 }}>{p.body}</p></div>
         ))}
         <AdsSlot place="posts" />
-      </section>    </div>
+      </section>           {isAdmin && (
+        <section className="fk-sec" id="admin">
+          <h2>⚙️ تحكم المدير</h2>
+          <h3 style={{ margin: '8px 0' }}>الأفكار والاشتراكات</h3>
+          {adminEntries.length === 0 && <p className="fk-empty">لا توجد أفكار.</p>}
+          {adminEntries.map((i) => (
+            <div className="fk-post" key={i.id}>
+              <h3>{i.title}</h3>
+              <span className={'fk-tag ' + (i.status === 'approved' ? 'ok' : i.status === 'rejected' ? 'no' : '')}>{STATUS[i.status]}</span>
+              {i.published && <span className="fk-tag ok">منشورة</span>}
+              <p className="fk-small" style={{ lineHeight: 1.9 }}>
+                {i.owner_name} • {i.governorate} • <span dir="ltr">{i.phone}</span><br />مرجع التحويل: <b dir="ltr">{i.payment_ref}</b>
+              </p>
+              <p style={{ marginTop: 6 }}>{i.description}</p>
+              <button className="fk-btn g s" onClick={() => upd('idea_entries', i.id, { status: 'approved' })}>قبول الاشتراك</button>
+              <button className="fk-btn r s" onClick={() => upd('idea_entries', i.id, { status: 'rejected', published: false })}>رفض</button>
+              {i.status === 'approved' && (
+                <button className="fk-btn s" onClick={() => upd('idea_entries', i.id, { published: !i.published })}>{i.published ? 'إخفاء' : 'نشر في البنك'}</button>
+              )}
+              <button className="fk-btn r s" onClick={() => del('idea_entries', i.id)}>حذف</button>
+            </div>
+          ))}
+          <h3 style={{ margin: '16px 0 8px' }}>بوستات تنتظر الموافقة</h3>
+          {adminPosts.length === 0 && <p className="fk-empty">لا توجد بوستات معلقة.</p>}
+          {adminPosts.map((p) => (
+            <div className="fk-post" key={p.id}>
+              <h3>{p.title}</h3><span className="fk-small">{p.author}</span>
+              <p style={{ marginTop: 6 }}>{p.body}</p>
+              <button className="fk-btn g s" onClick={() => upd('community_posts', p.id, { published: true })}>نشر</button>
+              <button className="fk-btn r s" onClick={() => del('community_posts', p.id)}>حذف</button>
+            </div>
+          ))}
+          <AdsAdmin />
+        </section>
+      )}
+
+      <section className="fk-sec" id="share">
+        <h2>📣 المشاركة في عرض منصة «فكرتك مشروعك»</h2>
+        <p style={{ fontSize: 14, lineHeight: 1.9 }}>المنصة مفتوحة للمشاركة والتعريف بالفكرة من خلال أصحاب الأفكار والمشروعات والمشاركين والداعمين، بهدف نشر فكرة المنصة والوصول إلى أكبر عدد من الشباب وأصحاب المشروعات في جميع المحافظات.</p>
+        <p className="fk-lead" style={{ margin: '10px 0 4px' }}>كيف تشارك؟</p>
+        <ul style={{ lineHeight: 2, fontSize: 14, paddingRight: 18, margin: 0 }}>
+          <li>شارك رابط المنصة مع أصحاب الأفكار والمشروعات.</li>
+          <li>عرّف الآخرين بفكرة «من فكرة إلى مشروع».</li>
+          <li>شارك في عرض تجربتك أو مشروعك أو فكرتك على المنصة.</li>
+          <li>ساهم في الوصول إلى أفكار ومشروعات مميزة من مختلف المحافظات.</li>
+          <li>شارك المنشورات والإعلانات المسموح بها على وسائل التواصل الاجتماعي.</li>
+        </ul>
+        <button className="fk-btn" onClick={share}>شارك رابط المنصة</button>
+        <p className="fk-small" style={{ marginTop: 10 }}>المشاركة في التعريف بالمنصة لا تعني انتقال ملكية أي فكرة أو مشروع إلى المنصة، وتظل حقوق أصحاب الأفكار والمشروعات محفوظة وفقًا للقانون والاتفاقات المعلنة.</p>
+      </section> </div>
   )
 }
