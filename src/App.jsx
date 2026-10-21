@@ -316,3 +316,43 @@ export default function App() {
     </div>
   )
 }
+      <section className="fk-sec" id="inspire">
+        <h2>💡 مش عندك فكرة؟ ابدأ من هنا</h2>
+        <p className="fk-lead" style={{ fontWeight: 400 }}>مش لازم تدخل المنصة بفكرة جاهزة. تقدر تتصفح أفكار ومجالات تساعدك تستلهم فكرة مناسبة ليك، وبعدها تطورها بطريقتك وتسجل فكرتك الخاصة.</p>
+        <div className="fk-grid">
+          {CATS.map(([i, t, d]) => <div className="fk-card" key={t}><h3>{i} {t}</h3><p>{d}</p></div>)}
+        </div>
+        <div className="fk-note" style={{ background: '#fffbe6', borderColor: '#facc15' }}>✨ <b>الأهم:</b> الأفكار الموجودة هنا للإلهام فقط، وليست مِلكًا للمنصة. لو طورت فكرة خاصة بك، سجلها باسمك واحتفظ بتفاصيلها وحقوقك.</div>
+        <button className="fk-btn o" onClick={() => go('register')}>وجدت فكرة؟ سجّل فكرتك</button>
+      </section>
+
+      <section className="fk-sec" id="bank">
+        <h2>💡 الأفكار المنشورة</h2>
+        {bank.length === 0 && <p className="fk-empty">لا توجد أفكار منشورة حاليًا.</p>}
+        {bank.map((i) => (
+          <div className="fk-post" key={i.id}>
+            <h3>{i.title}</h3>
+            <span className="fk-tag">{i.governorate}</span>
+            <span className="fk-small">{i.owner_name}{i.budget ? ` • ميزانية ${i.budget} جنيه` : ''}</span>
+            <p style={{ marginTop: 6 }}>{i.description}</p>
+          </div>
+        ))}
+      </section>
+
+      <section className="fk-sec" id="mine">
+        <h2>📂 أفكاري</h2>
+        {!session && <p className="fk-empty">سجّل دخولك لتشوف أفكارك.</p>}
+        {session && mine.length === 0 && <p className="fk-empty">لم تسجل أفكارًا بعد.</p>}
+        {mine.map((i) => (
+          <div className="fk-post" key={i.id}>
+            <h3>{i.title}</h3>
+            <span className={'fk-tag ' + (i.status === 'approved' ? 'ok' : i.status === 'rejected' ? 'no' : '')}>{STATUS[i.status]}</span>
+            <span className="fk-tag">{i.governorate}</span>
+            {i.published && <span className="fk-tag ok">منشورة</span>}
+            <p style={{ marginTop: 6 }}>{i.description}</p>
+            {i.status === 'pending' && <button className="fk-btn r s" onClick={() => removeMine(i.id)}>حذف</button>}
+          </div>
+        ))}
+      </section>      </div>
+  )
+}
