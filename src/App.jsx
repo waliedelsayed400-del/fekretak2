@@ -72,7 +72,7 @@ const CSS = `
 .fk-tag{display:inline-block;font-size:12px;padding:3px 10px;border-radius:12px;background:#e0ecff;color:#1e40af;margin-left:6px}
 .fk-tag.ok{background:#dcfce7;color:#166534}
 .fk-tag.no{background:#fee2e2;color:#b91c1c}
-.fk-toast{position:sticky;top:8px;z-index:9;margin:8px 12px;padding:12px 16px;border-radius:16px;background:#1e3a8a;color:#fff;font-size:14px}
+.fk-toast{position:fixed;top:8px;left:12px;right:12px;z-index:99;padding:12px 16px;border-radius:16px;background:#1e3a8a;color:#fff;font-size:14px}
 .fk-empty{color:#64748b;font-size:14px;padding:8px 0}
 `
 
