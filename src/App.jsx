@@ -353,6 +353,39 @@ export default function App() {
             {i.status === 'pending' && <button className="fk-btn r s" onClick={() => removeMine(i.id)}>حذف</button>}
           </div>
         ))}
-      </section>      </div>
+      </section>          <section className="fk-sec" id="community">
+        <h2>💬 مجتمع «فكرتك مشروعك»</h2>
+        <p className="fk-small" style={{ marginBottom: 10 }}>الدردشة متاحة للقراءة للجميع، أما إرسال الرسائل والمشاركة في الحوار فهي للمشتركين في المسابقة فقط.</p>
+        <div className="fk-chat">
+          {msgs.length === 0 && <p className="fk-empty">لا توجد رسائل بعد.</p>}
+          {msgs.map((m) => <div className="fk-msg" key={m.id}><b>{m.author}</b>{m.body}</div>)}
+        </div>
+        <form onSubmit={sendMsg}>
+          <div className="fk-two">
+            <input value={chatName} onChange={(e) => setChatName(e.target.value)} placeholder="اسمك" />
+            <input value={chatText} onChange={(e) => setChatText(e.target.value)} placeholder="اكتب رسالتك" maxLength={500} />
+          </div>
+          <button className="fk-btn g">إرسال الرسالة</button>
+          <span className="fk-small" style={{ marginRight: 8 }}>للكتابة في الدردشة يجب الاشتراك.</span>
+        </form>
+        <AdsSlot place="chat" />
+      </section>
+
+      <section className="fk-sec" id="posts">
+        <h2>📰 بوستات ومشاركات الأعضاء</h2>
+        <p className="fk-small" style={{ marginBottom: 10 }}>يمكن للجميع مشاهدة البوستات، والمشتركون فقط يمكنهم نشر بوستات ومشاركات جديدة. المنشورات تمر على موافقة الإدارة قبل النشر.</p>
+        <form onSubmit={sendPost} style={{ background: '#fffaee', padding: 12, borderRadius: 18 }}>
+          <input value={post.author} onChange={(e) => setPost({ ...post, author: e.target.value })} placeholder="اسمك" />
+          <input style={{ marginTop: 8 }} value={post.title} onChange={(e) => setPost({ ...post, title: e.target.value })} placeholder="عنوان البوست" />
+          <textarea style={{ marginTop: 8 }} value={post.body} onChange={(e) => setPost({ ...post, body: e.target.value })} placeholder="اكتب مشاركتك أو فكرتك أو تجربتك..." />
+          <button className="fk-btn">نشر المشاركة</button>
+          <span className="fk-small" style={{ marginRight: 8 }}>لنشر بوست يجب الاشتراك.</span>
+        </form>
+        {posts.length === 0 && <p className="fk-empty" style={{ marginTop: 10 }}>لا توجد بوستات بعد.</p>}
+        {posts.map((p) => (
+          <div className="fk-post" key={p.id}><h3>{p.title}</h3><span className="fk-small">{p.author}</span><p style={{ marginTop: 6 }}>{p.body}</p></div>
+        ))}
+        <AdsSlot place="posts" />
+      </section>    </div>
   )
 }
