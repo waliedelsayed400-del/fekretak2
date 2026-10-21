@@ -313,3 +313,6 @@ export default function App() {
           {!session && <p className="fk-small" style={{ marginTop: 8 }}>لازم تسجّل دخولك من قسم «حسابي» قبل تسجيل الفكرة.</p>}
         </form>
       </section> 
+    </div>
+  )
+}
