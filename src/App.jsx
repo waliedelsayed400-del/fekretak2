@@ -206,3 +206,110 @@ export default function App() {
       else { await navigator.clipboard.writeText(url); say('تم نسخ رابط المنصة') }
     } catch { /* cancelled */ }
   }
+  if (!ready) return <div className="fk"><style>{CSS}</style><div className="fk-sec">جارٍ التحميل...</div></div>
+
+  return (
+    <div className="fk">
+      <style>{CSS}</style>
+      <header className="fk-head">
+        <h1>💡 فكرتك مشروعك</h1>
+        <p>من فكرة إلى مشروع 🇪🇬</p>
+      </header>
+
+      <nav className="fk-nav">
+        <button className="fk-pill" onClick={() => go('account')}>👤 حسابي</button>
+        <button className="fk-pill" onClick={() => go('register')}>📝 سجّل فكرتك</button>
+        <button className="fk-pill" onClick={() => go('bank')}>💡 بنك الأفكار</button>
+        <button className="fk-pill" onClick={() => go('community')}>💬 المجتمع</button>
+        <button className="fk-pill" onClick={() => go('posts')}>📰 البوستات</button>
+        <button className="fk-pill" onClick={() => go('mine')}>📂 أفكاري</button>
+        {isAdmin && <button className="fk-pill" onClick={() => go('admin')}>⚙️ المدير</button>}
+      </nav>
+
+      {toast && <div className="fk-toast">{toast}</div>}
+
+      <section className="fk-sec" id="about">
+        <h2>هدف المنصة: نكتشف فكرتك ونمنحها فرصة حقيقية</h2>
+        <p className="fk-lead">منصة «فكرتك مشروعك» تهدف لاكتشاف أصحاب الأفكار والمشروعات الواعدة من جميع محافظات مصر، وفحص الأفكار ومعاينتها حسب طبيعة المشروع، والاستفادة من رأي الجمهور، ثم اختيار أفضل الأفكار للمنافسة على مستوى الجمهورية.</p>
+        <div className="fk-grid">
+          {STEPS.map(([n, t, d]) => (
+            <div className="fk-card" key={t}><h3>{n} {t}</h3><p>{d}</p></div>
+          ))}
+        </div>
+      </section>
+
+      <div className="fk-green">
+        <b>🚀 ومش معنى إنك ماكسبتش إن فكرتك انتهت!</b><br />
+        أفضل الأفكار الواعدة غير الفائزة يمكن أن نحتضنها ونساعد في تطويرها وتسويقها والوصول بها للسوق، وفق البرامج والفرص المتاحة.
+      </div>
+
+      <section className="fk-sec" id="account">
+        <h2>👤 حسابي</h2>
+        {session ? (
+          <>
+            <p className="fk-lead">أنت مسجّل بـ {session.user.email}</p>
+            <p className="fk-small" style={{ marginTop: 8 }}>
+              {subscriber ? '✅ اشتراكك مفعّل. تقدر تكتب في الدردشة وتنشر بوستات.' : 'اشتراكك لسه مش مفعّل. يتفعّل بعد مراجعة تحويل الـ 10 جنيه.'}
+            </p>
+            <button className="fk-btn r" onClick={() => supabase.auth.signOut()}>تسجيل الخروج</button>
+          </>
+        ) : (
+          <form onSubmit={auth}>
+            <label>البريد الإلكتروني</label>
+            <input type="email" dir="ltr" value={email} onChange={(e) => setEmail(e.target.value)} required />
+            <label>كلمة المرور</label>
+            <input type="password" dir="ltr" value={pass} onChange={(e) => setPass(e.target.value)} minLength={6} required />
+            <button className="fk-btn" disabled={busy}>{mode === 'login' ? 'تسجيل الدخول' : 'إنشاء حساب'}</button>
+            <button type="button" className="fk-btn r" style={{ marginRight: 8 }} onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}>
+              {mode === 'login' ? 'معنديش حساب' : 'عندي حساب'}
+            </button>
+          </form>
+        )}
+      </section>
+
+      <div className="fk-lock">
+        <h3>🔐 اطمّن على فكرتك وحقوقك</h3>
+        <p><b>تسجيل الفكرة لا يعني انتقال ملكيتها إلى المنصة.</b> وتظل حقوق صاحب الفكرة محفوظة وفقًا للقانون، ولا يتم استخدام أو تطوير أو تسويق الفكرة خارج نطاق المسابقة أو الخدمات المعلنة إلا وفق موافقة واتفاق واضح مع صاحبها.</p>
+        <p style={{ marginTop: 8 }}>صاحب الفكرة يستطيع مراجعة بيانات فكرته وتعديلها من قسم «أفكاري» قبل وأثناء المراجعة، وفق حالة الفكرة وما تسمح به إجراءات المسابقة.</p>
+        <p className="fk-small" style={{ marginTop: 8 }}>هذه صياغة تنظيمية مبدئية للمنصة، ويُفضّل مراجعتها واعتمادها من محامٍ مصري قبل الإطلاق التجاري النهائي.</p>
+      </div>
+
+      <section className="fk-sec">
+        <h2>📜 حقوق وخصوصية أصحاب الأفكار</h2>
+        <ul style={{ lineHeight: 2, fontSize: 14, paddingRight: 18, margin: 0 }}>
+          <li>الفكرة تظل مملوكة لصاحبها، ولا تنتقل ملكيتها لمجرد تسجيلها.</li>
+          <li>يقتصر استخدام بيانات الفكرة على أغراض المسابقة والخدمات المعلنة، مع مراعاة الموافقات والاتفاقات اللازمة.</li>
+          <li>أي تبنٍّ أو تطوير أو تسويق أو شراكة مستقبلية مع صاحب الفكرة يتم وفق موافقة واتفاق واضح ومستقل.</li>
+          <li>تُعامل البيانات الشخصية وفق الإطار القانوني المصري لحماية البيانات الشخصية، بما في ذلك قانون رقم 151 لسنة 2020 ولائحته التنفيذية رقم 816 لسنة 2025.</li>
+        </ul>
+        <div className="fk-note"><b>رسالتنا:</b> مافيش داعي للقلق من تسجيل فكرتك؛ هدف المنصة إعطاء الفكرة فرصة حقيقية، مع الحفاظ على حقوق صاحبها وعدم اعتبار التسجيل تنازلًا عن الملكية.</div>
+      </section>
+
+      <section className="fk-sec" id="register">
+        <h2>📝 تسجيل فكرة مشروع</h2>
+        <form onSubmit={submitIdea}>
+          <div className="fk-two">
+            <div><label>اسم صاحب الفكرة</label><input value={form.owner_name} onChange={setF('owner_name')} placeholder="الاسم" /></div>
+            <div><label>رقم الهاتف</label><input dir="ltr" inputMode="tel" value={form.phone} onChange={setF('phone')} placeholder="01xxxxxxxxx" /></div>
+          </div>
+          <label>اسم المشروع</label>
+          <input value={form.title} onChange={setF('title')} placeholder="مثال: مشروع إنتاج غذائي" />
+          <div className="fk-two">
+            <div><label>المحافظة</label>
+              <select value={form.governorate} onChange={setF('governorate')}>{GOVS.map((g) => <option key={g}>{g}</option>)}</select>
+            </div>
+            <div><label>الميزانية المتوقعة</label><input inputMode="numeric" value={form.budget} onChange={setF('budget')} placeholder="بالجنيه" /></div>
+          </div>
+          <label>شرح الفكرة بالتفصيل</label>
+          <textarea value={form.description} onChange={setF('description')} placeholder="اشرح المنتج أو الخدمة، العملاء، طريقة التنفيذ، وما الذي يميز المشروع..." />
+          <div className="fk-fee">
+            💰 رسوم الاشتراك: <b>10 جنيه</b><br />
+            فودافون كاش: <b dir="ltr">01099156391</b><br />
+            <span className="fk-small">الـ 10 جنيه رسوم اشتراك في المسابقة وتسجيل الفكرة واستخدام خدمات المشاركة، وليست سحبًا عشوائيًا للفوز. بيانات التحويل بتتراجع يدويًا.</span>
+            <label>رقم/مرجع التحويل (بعد التحويل)</label>
+            <input value={form.payment_ref} onChange={setF('payment_ref')} />
+          </div>
+          <button className="fk-btn" disabled={busy}>تسجيل الفكرة</button>
+          {!session && <p className="fk-small" style={{ marginTop: 8 }}>لازم تسجّل دخولك من قسم «حسابي» قبل تسجيل الفكرة.</p>}
+        </form>
+      </section> 
