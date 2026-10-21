@@ -1,7 +1,7 @@
 import React from 'react'
 import { useEffect, useState, useCallback } from 'react'
-import * as sbm from './lib/supabase'
-
+import * as sbm from './lib/supabase'  
+import { AdsSlot, AdsAdmin } from './Ads'
 const supabase = sbm.supabase || sbm.default
 
 const GOVS = ['القاهرة','الجيزة','الإسكندرية','القليوبية','الشرقية','الدقهلية','الغربية','المنوفية','البحيرة','كفر الشيخ','دمياط','بورسعيد','الإسماعيلية','السويس','شمال سيناء','جنوب سيناء','الفيوم','بني سويف','المنيا','أسيوط','سوهاج','قنا','الأقصر','أسوان','البحر الأحمر','الوادي الجديد','مطروح']
