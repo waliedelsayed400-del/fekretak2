@@ -313,9 +313,9 @@ export default function App() {
           {!session && <p className="fk-small" style={{ marginTop: 8 }}>لازم تسجّل دخولك من قسم «حسابي» قبل تسجيل الفكرة.</p>}
         </form>
       </section> 
-    </div>
-  )
-}
+
+  
+
       <section className="fk-sec" id="inspire">
         <h2>💡 مش عندك فكرة؟ ابدأ من هنا</h2>
         <p className="fk-lead" style={{ fontWeight: 400 }}>مش لازم تدخل المنصة بفكرة جاهزة. تقدر تتصفح أفكار ومجالات تساعدك تستلهم فكرة مناسبة ليك، وبعدها تطورها بطريقتك وتسجل فكرتك الخاصة.</p>
