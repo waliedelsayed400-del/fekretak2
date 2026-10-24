@@ -1,440 +1,86 @@
-import React from 'react'
-import { useEffect, useState, useCallback } from 'react'
-import * as sbm from './lib/supabase'  
-import { AdsSlot, AdsAdmin } from './Ads'
-const supabase = sbm.supabase || sbm.default
+import React, { useEffect, useState } from 'react';
+import { LogIn, UserPlus, LogOut, Lightbulb, Home, FolderKanban, Trophy, Bell, User } from 'lucide-react';
+import { supabase, supabaseConfigured } from './lib/supabase';
 
-const GOVS = ['القاهرة','الجيزة','الإسكندرية','القليوبية','الشرقية','الدقهلية','الغربية','المنوفية','البحيرة','كفر الشيخ','دمياط','بورسعيد','الإسماعيلية','السويس','شمال سيناء','جنوب سيناء','الفيوم','بني سويف','المنيا','أسيوط','سوهاج','قنا','الأقصر','أسوان','البحر الأحمر','الوادي الجديد','مطروح']
+function AuthScreen({ onAuth }) {
+  const [mode, setMode] = useState('login');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState('');
 
-const STEPS = [
-  ['1️⃣','سجّل فكرتك','اكتب المشروع بالتفصيل وطريقة التنفيذ والميزانية المتوقعة.'],
-  ['2️⃣','الفحص والمراجعة','نراجع الفكرة ومدى وضوحها وقابليتها للتنفيذ واحتياج السوق.'],
-  ['3️⃣','المعاينة','الأفكار المؤهلة قد تنتقل للمعاينة ودراسة المشروع بصورة أعمق.'],
-  ['4️⃣','رأي الجمهور','الجمهور يشارك في تقييم الأفكار المؤهلة بجانب التقييم وفق المعايير المعلنة.'],
-  ['5️⃣','من المحافظات للجمهورية','أفضل الأفكار تمثل محافظاتها وتدخل المنافسة على مستوى الجمهورية وفق نظام المسابقة.'],
-  ['6️⃣','من فكرة لمشروع','الفائزون يحصلون على فرصة للدعم والتوجيه والتسويق وفق البرامج المتاحة.'],
-]
+  async function submit(e) {
+    e.preventDefault();
+    setMessage('');
+    setBusy(true);
+    try {
+      if (!supabaseConfigured) throw new Error('أكمل إعداد Supabase في ملف .env.local أولاً.');
+      if (mode === 'login') {
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        onAuth(data.user);
+      } else {
+        const { data, error } = await supabase.auth.signUp({
+          email, password,
+          options: { data: { full_name: name } }
+        });
+        if (error) throw error;
+        if (data.session) onAuth(data.user);
+        else setMessage('تم إنشاء الحساب. راجع بريدك الإلكتروني لتأكيد الحساب إذا كان تأكيد البريد مفعلاً.');
+      }
+    } catch (err) {
+      setMessage(err.message || 'حدث خطأ.');
+    } finally { setBusy(false); }
+  }
 
-const CATS = [
-  ['🍔','أكل ومشروبات','وجبات منزلية، منتجات غذائية، مطبخ إنتاجي، عربات طعام، أو خدمة توصيل متخصصة.'],
-  ['🌱','زراعة وإنتاج','زراعة حديثة، مشاتل، منتجات زراعية مصنعة، تدوير المخلفات الزراعية.'],
-  ['♻️','إعادة تدوير','جمع وفرز وإعادة استخدام البلاستيك والورق والمخلفات وتحويلها لمنتجات.'],
-  ['📱','تكنولوجيا وخدمات','تطبيقات، منصات، خدمات رقمية، تعليم إلكتروني، أو حلول لمشكلة محلية.'],
-  ['🧵','تصنيع وحرف','ملابس، إكسسوارات، أثاث، منتجات يدوية، وتطوير الحرف المحلية.'],
-  ['🚚','خدمات ونقل','خدمات توصيل، صيانة، خدمات منزلية، أو حلول لاحتياجات المناطق والمحافظات.'],
-]
+  return <main className="auth-page">
+    <section className="auth-card">
+      <div className="brand"><div className="brand-icon"><Lightbulb size={30}/></div><div><b>فكرتك مشروعك</b><small>من فكرة إلى مشروع</small></div></div>
+      <h1>{mode === 'login' ? 'مرحباً بك' : 'إنشاء حساب جديد'}</h1>
+      <p className="muted">{mode === 'login' ? 'سجل الدخول للمتابعة' : 'أنشئ حسابك وابدأ رحلتك'}</p>
+      <form onSubmit={submit}>
+        {mode === 'register' && <label>الاسم<input value={name} onChange={e=>setName(e.target.value)} placeholder="اكتب اسمك" required/></label>}
+        <label>البريد الإلكتروني<input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="example@email.com" required/></label>
+        <label>كلمة المرور<input type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="••••••••" minLength="6" required/></label>
+        <button className="primary" disabled={busy}>{mode === 'login' ? <><LogIn size={19}/> تسجيل الدخول</> : <><UserPlus size={19}/> إنشاء الحساب</>}</button>
+      </form>
+      {mode === 'login' && <button className="link" onClick={()=>setMessage('ميزة إعادة تعيين كلمة المرور سنربطها بالخطوة التالية.')}>نسيت كلمة المرور؟</button>}
+      {message && <div className="notice">{message}</div>}
+      <div className="switch">{mode === 'login' ? 'ليس لديك حساب؟' : 'لديك حساب بالفعل؟'} <button className="link inline" onClick={()=>{setMode(mode==='login'?'register':'login');setMessage('')}}>{mode === 'login' ? 'إنشاء حساب جديد' : 'تسجيل الدخول'}</button></div>
+      <div className="demo-note">التسجيل والدخول مرتبطان بـ Supabase Auth عند وضع بيانات مشروعك في .env.local.</div>
+    </section>
+  </main>
+}
 
-const STATUS = { pending: 'قيد مراجعة الدفع', approved: 'مقبولة', rejected: 'مرفوضة' }
-
-const CSS = `
-.fk{direction:rtl;min-height:100vh;font-family:'Segoe UI',Tahoma,'Noto Sans Arabic',system-ui,sans-serif;color:#1e293b;background:linear-gradient(180deg,#eaf4ff 0%,#f8f6ec 55%,#fdf1ef 100%);padding-bottom:40px}
-.fk *{box-sizing:border-box}
-.fk h1,.fk h2,.fk h3,.fk p{margin:0}
-.fk-head{background:linear-gradient(135deg,#1e3a8a,#2b7de9 60%,#38bdf8);color:#fff;padding:26px 20px 30px;border-radius:0 0 34px 34px}
-.fk-head h1{font-size:28px}
-.fk-head p{opacity:.9;margin-top:6px}
-.fk-nav{display:flex;gap:8px;padding:14px 12px;overflow-x:auto}
-.fk-pill{flex:none;border:0;cursor:pointer;color:#fff;font:inherit;font-weight:700;font-size:14px;padding:11px 16px;border-radius:18px;background:linear-gradient(135deg,#a855f7,#ec4899);box-shadow:0 6px 14px rgba(168,85,247,.3)}
-.fk-sec{background:#fff;margin:14px 12px;padding:20px 16px;border-radius:26px;box-shadow:0 8px 24px rgba(30,58,138,.07)}
-.fk-sec h2{font-size:23px;color:#1e3a8a;margin-bottom:12px}
-.fk-lead{font-weight:700;line-height:2;font-size:15px}
-.fk-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:14px}
-.fk-card{border:1px solid #dbe7fb;border-radius:22px;padding:14px;background:#fff}
-.fk-card h3{font-size:15px;color:#2563eb;margin-bottom:6px}
-.fk-card p{font-size:13px;line-height:1.8;color:#475569}
-.fk-green{margin:14px 12px;padding:16px;border-radius:22px;border-right:5px solid #22c55e;background:linear-gradient(135deg,#e6fbef,#e0f2fe);line-height:1.9;font-size:14px}
-.fk-fee{border:2px dashed #fb923c;border-radius:22px;padding:16px;background:linear-gradient(135deg,#fff1e0,#ffe4ec);line-height:1.9;font-size:14px;margin:14px 0}
-.fk-fee b{color:#c2410c}
-.fk-lock{margin:14px 12px;padding:16px;border-radius:22px;border:2px solid #86efac;background:linear-gradient(135deg,#e0f0ff,#e6fbf5);line-height:1.9;font-size:14px}
-.fk-lock h3{color:#166534;font-size:18px;margin-bottom:8px}
-.fk-small{font-size:12px;color:#64748b}
-.fk-note{padding:14px;border-radius:18px;border-right:5px solid #fb923c;background:#fff4ea;font-size:14px;line-height:1.9;margin-top:10px}
-.fk label{display:block;font-size:14px;margin:12px 0 6px}
-.fk input,.fk select,.fk textarea{width:100%;font:inherit;padding:12px 14px;border:1px solid #cddcf5;border-radius:16px;background:#fff;color:#1e293b}
-.fk textarea{min-height:110px;resize:vertical}
-.fk input:focus,.fk select:focus,.fk textarea:focus{outline:2px solid #f59e0b;outline-offset:1px}
-.fk-btn{border:0;cursor:pointer;font:inherit;font-weight:700;padding:12px 20px;border-radius:16px;color:#fff;background:linear-gradient(135deg,#2563eb,#38bdf8);margin-top:14px}
-.fk-btn.g{background:linear-gradient(135deg,#22c55e,#86efac);color:#14532d}
-.fk-btn.o{background:linear-gradient(135deg,#fb923c,#fde047);color:#7c2d12}
-.fk-btn.r{background:#fee2e2;color:#b91c1c}
-.fk-btn.s{padding:8px 14px;font-size:13px;margin-top:8px;margin-left:6px}
-.fk-btn:disabled{opacity:.55;cursor:default}
-.fk-two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-@media(max-width:520px){.fk-two{grid-template-columns:1fr}}
-.fk-chat{height:260px;overflow-y:auto;border:1px solid #dbe7fb;border-radius:18px;padding:10px;background:#f7faff;margin-bottom:10px}
-.fk-msg{padding:6px 4px;font-size:14px;border-bottom:1px solid #eef2f9}
-.fk-msg b{color:#2563eb;margin-left:6px}
-.fk-ad{border:2px dashed #cbd5e1;border-radius:18px;padding:14px;text-align:center;color:#64748b;font-size:13px;margin-top:12px}
-.fk-ad b{display:block;color:#1e293b;margin-bottom:4px}
-.fk-post{border:1px solid #dbe7fb;border-radius:18px;padding:14px;margin-top:10px}
-.fk-post h3{font-size:16px;margin-bottom:4px}
-.fk-post p{font-size:14px;line-height:1.8;white-space:pre-wrap}
-.fk-tag{display:inline-block;font-size:12px;padding:3px 10px;border-radius:12px;background:#e0ecff;color:#1e40af;margin-left:6px}
-.fk-tag.ok{background:#dcfce7;color:#166534}
-.fk-tag.no{background:#fee2e2;color:#b91c1c}
-.fk-toast{position:fixed;top:8px;left:12px;right:12px;z-index:99;padding:12px 16px;border-radius:16px;background:#1e3a8a;color:#fff;font-size:14px}
-.fk-empty{color:#64748b;font-size:14px;padding:8px 0}
-`
+function Dashboard({ user, onLogout }) {
+  const name = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'مستخدم';
+  return <div className="app-shell">
+    <header className="topbar"><div className="brand compact"><div className="brand-icon"><Lightbulb size={23}/></div><div><b>فكرتك مشروعك</b><small>من فكرة إلى مشروع</small></div></div><button className="logout" onClick={onLogout}><LogOut size={18}/> خروج</button></header>
+    <main className="dashboard">
+      <section className="hero"><div><span className="eyebrow">أهلاً بك</span><h1>مرحباً {name}</h1><p>معاً نحو أفكار تصنع المستقبل</p></div><div className="hero-bulb"><Lightbulb size={58}/></div></section>
+      <section className="quick-grid">
+        <div className="feature"><Trophy/><b>المسابقات الحالية</b><span>اكتشف الفرص</span></div>
+        <div className="feature"><FolderKanban/><b>أفكاري ومشاريعي</b><span>تابع مشاريعك</span></div>
+        <div className="feature"><Home/><b>أفكار محافظتي</b><span>استكشف المشاريع</span></div>
+        <div className="feature"><Bell/><b>الإشعارات</b><span>آخر التحديثات</span></div>
+      </section>
+      <section className="card"><h2>حسابك</h2><p>البريد الإلكتروني: <strong>{user.email}</strong></p><p>المعرّف: <code>{user.id}</code></p></section>
+    </main>
+    <nav className="bottom-nav"><span><Home/>الرئيسية</span><span><FolderKanban/>المشاريع</span><span><Trophy/>المسابقات</span><span><Bell/>الإشعارات</span><span><User/>حسابي</span></nav>
+  </div>
+}
 
 export default function App() {
-  const [session, setSession] = useState(null)
-  const [ready, setReady] = useState(false)
-  const [isAdmin, setIsAdmin] = useState(false)
-  const [mine, setMine] = useState([])
-  const [bank, setBank] = useState([])
-  const [msgs, setMsgs] = useState([])
-  const [posts, setPosts] = useState([])
-  const [adminEntries, setAdminEntries] = useState([])
-  const [adminPosts, setAdminPosts] = useState([])
-  const [toast, setToast] = useState('')
-  const [busy, setBusy] = useState(false)
-
-  const [mode, setMode] = useState('login')
-  const [email, setEmail] = useState('')
-  const [pass, setPass] = useState('')
-
-  const [form, setForm] = useState({ owner_name: '', phone: '', title: '', governorate: 'القاهرة', budget: '', description: '', payment_ref: '' })
-  const [chatName, setChatName] = useState('')
-  const [chatText, setChatText] = useState('')
-  const [post, setPost] = useState({ author: '', title: '', body: '' })
-
-  const subscriber = mine.some((e) => e.status === 'approved')
-  const say = (t) => { setToast(t); setTimeout(() => setToast(''), 5000) }
-  const go = (id) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
-  const setF = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
-
-  const loadPublic = useCallback(async () => {
-    const a = await supabase.from('public_ideas').select('*').order('created_at', { ascending: false })
-    if (a.data) setBank(a.data)
-    const b = await supabase.from('community_messages').select('*').order('created_at', { ascending: false }).limit(50)
-    if (b.data) setMsgs([...b.data].reverse())
-    const c = await supabase.from('community_posts').select('*').eq('published', true).order('created_at', { ascending: false })
-    if (c.data) setPosts(c.data)
-  }, [])
-
-  const loadPrivate = useCallback(async (uid) => {
-    if (!uid) { setMine([]); setIsAdmin(false); setAdminEntries([]); setAdminPosts([]); return }
-    const m = await supabase.from('idea_entries').select('*').eq('user_id', uid).order('created_at', { ascending: false })
-    if (m.data) setMine(m.data)
-    const adm = await supabase.rpc('is_admin')
-    const admin = adm.data === true
-    setIsAdmin(admin)
-    if (admin) {
-      const e = await supabase.from('idea_entries').select('*').order('created_at', { ascending: false })
-      if (e.data) setAdminEntries(e.data)
-      const p = await supabase.from('community_posts').select('*').eq('published', false).order('created_at', { ascending: false })
-      if (p.data) setAdminPosts(p.data)
-    }
-  }, [])
-
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => { setSession(data.session); setReady(true) })
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => setSession(s))
-    return () => sub.subscription.unsubscribe()
-  }, [])
-
-  useEffect(() => { loadPublic() }, [loadPublic])
-  useEffect(() => { loadPrivate(session?.user?.id) }, [session, loadPrivate])
-  useEffect(() => {
-    const t = setInterval(() => loadPublic(), 20000)
-    return () => clearInterval(t)
-  }, [loadPublic])
-
-  const refresh = async () => { await loadPublic(); await loadPrivate(session?.user?.id) }
-
-  async function auth(e) {
-    e.preventDefault()
-    setBusy(true)
-    const fn = mode === 'login' ? supabase.auth.signInWithPassword : supabase.auth.signUp
-    const { error } = await fn.call(supabase.auth, { email, password: pass })
-    setBusy(false)
-    if (error) say('تعذّر الدخول: ' + error.message)
-    else say(mode === 'login' ? 'تم تسجيل الدخول' : 'تم إنشاء الحساب')
-  }
-
-  async function submitIdea(e) {
-    e.preventDefault()
-    if (!session) return say('سجّل دخولك الأول من قسم حسابي')
-    const f = form
-    if (!f.owner_name || !f.phone || !f.title || !f.description || !f.payment_ref) return say('كمّل كل الحقول، ومنها رقم مرجع التحويل')
-    setBusy(true)
-    const { error } = await supabase.from('idea_entries').insert({ ...f, budget: f.budget ? Number(f.budget) : null })
-    setBusy(false)
-    if (error) return say('تعذّر التسجيل: ' + error.message)
-    setForm({ owner_name: '', phone: '', title: '', governorate: 'القاهرة', budget: '', description: '', payment_ref: '' })
-    say('تم تسجيل فكرتك. هتتفعل بعد مراجعة التحويل.')
-    refresh(); go('mine')
-  }
-
-  async function removeMine(id) {
-    const { error } = await supabase.from('idea_entries').delete().eq('id', id)
-    if (error) say('تعذّر الحذف: ' + error.message); else refresh()
-  }
-
-  async function sendMsg(e) {
-    e.preventDefault()
-    if (!subscriber) return say('للكتابة في الدردشة يجب الاشتراك')
-    if (!chatName || !chatText) return
-    const { error } = await supabase.from('community_messages').insert({ author: chatName, body: chatText })
-    if (error) return say('تعذّر الإرسال: ' + error.message)
-    setChatText(''); loadPublic()
-  }
-
-  async function sendPost(e) {
-    e.preventDefault()
-    if (!subscriber) return say('لنشر بوست يجب الاشتراك')
-    if (!post.author || !post.title || !post.body) return
-    const { error } = await supabase.from('community_posts').insert(post)
-    if (error) return say('تعذّر النشر: ' + error.message)
-    setPost({ author: '', title: '', body: '' })
-    say('تم إرسال مشاركتك وتنتظر موافقة الإدارة.')
-  }
-
-  async function upd(table, id, patch) {
-    const { error } = await supabase.from(table).update(patch).eq('id', id)
-    if (error) say('تعذّر التحديث: ' + error.message); else refresh()
-  }
-  async function del(table, id) {
-    const { error } = await supabase.from(table).delete().eq('id', id)
-    if (error) say('تعذّر الحذف: ' + error.message); else refresh()
-  }
-
-  async function share() {
-    const url = window.location.origin
-    try {
-      if (navigator.share) await navigator.share({ title: 'فكرتك مشروعك', text: 'من فكرة إلى مشروع', url })
-      else { await navigator.clipboard.writeText(url); say('تم نسخ رابط المنصة') }
-    } catch { /* cancelled */ }
-  }
-  if (!ready) return <div className="fk"><style>{CSS}</style><div className="fk-sec">جارٍ التحميل...</div></div>
-
-  return (
-    <div className="fk">
-      <style>{CSS}</style>
-      <header className="fk-head">
-        <h1>💡 فكرتك مشروعك</h1>
-        <p>من فكرة إلى مشروع 🇪🇬</p>
-      </header>
-
-      <nav className="fk-nav">
-        <button className="fk-pill" onClick={() => go('account')}>👤 حسابي</button>
-        <button className="fk-pill" onClick={() => go('register')}>📝 سجّل فكرتك</button>
-        <button className="fk-pill" onClick={() => go('bank')}>💡 بنك الأفكار</button>
-        <button className="fk-pill" onClick={() => go('community')}>💬 المجتمع</button>
-        <button className="fk-pill" onClick={() => go('posts')}>📰 البوستات</button>
-        <button className="fk-pill" onClick={() => go('mine')}>📂 أفكاري</button>
-        {isAdmin && <button className="fk-pill" onClick={() => go('admin')}>⚙️ المدير</button>}
-      </nav>
-
-      {toast && <div className="fk-toast">{toast}</div>}
-
-      <section className="fk-sec" id="about">
-        <h2>هدف المنصة: نكتشف فكرتك ونمنحها فرصة حقيقية</h2>
-        <p className="fk-lead">منصة «فكرتك مشروعك» تهدف لاكتشاف أصحاب الأفكار والمشروعات الواعدة من جميع محافظات مصر، وفحص الأفكار ومعاينتها حسب طبيعة المشروع، والاستفادة من رأي الجمهور، ثم اختيار أفضل الأفكار للمنافسة على مستوى الجمهورية.</p>
-        <div className="fk-grid">
-          {STEPS.map(([n, t, d]) => (
-            <div className="fk-card" key={t}><h3>{n} {t}</h3><p>{d}</p></div>
-          ))}
-        </div>
-      </section>
-
-      <div className="fk-green">
-        <b>🚀 ومش معنى إنك ماكسبتش إن فكرتك انتهت!</b><br />
-        أفضل الأفكار الواعدة غير الفائزة يمكن أن نحتضنها ونساعد في تطويرها وتسويقها والوصول بها للسوق، وفق البرامج والفرص المتاحة.
-      </div>
-
-      <section className="fk-sec" id="account">
-        <h2>👤 حسابي</h2>
-        {session ? (
-          <>
-            <p className="fk-lead">أنت مسجّل بـ {session.user.email}</p>
-            <p className="fk-small" style={{ marginTop: 8 }}>
-              {subscriber ? '✅ اشتراكك مفعّل. تقدر تكتب في الدردشة وتنشر بوستات.' : 'اشتراكك لسه مش مفعّل. يتفعّل بعد مراجعة تحويل الـ 10 جنيه.'}
-            </p>
-            <button className="fk-btn r" onClick={() => supabase.auth.signOut()}>تسجيل الخروج</button>
-          </>
-        ) : (
-          <form onSubmit={auth}>
-            <label>البريد الإلكتروني</label>
-            <input type="email" dir="ltr" value={email} onChange={(e) => setEmail(e.target.value)} required />
-            <label>كلمة المرور</label>
-            <input type="password" dir="ltr" value={pass} onChange={(e) => setPass(e.target.value)} minLength={6} required />
-            <button className="fk-btn" disabled={busy}>{mode === 'login' ? 'تسجيل الدخول' : 'إنشاء حساب'}</button>
-            <button type="button" className="fk-btn r" style={{ marginRight: 8 }} onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}>
-              {mode === 'login' ? 'معنديش حساب' : 'عندي حساب'}
-            </button>
-          </form>
-        )}
-      </section>
-
-      <div className="fk-lock">
-        <h3>🔐 اطمّن على فكرتك وحقوقك</h3>
-        <p><b>تسجيل الفكرة لا يعني انتقال ملكيتها إلى المنصة.</b> وتظل حقوق صاحب الفكرة محفوظة وفقًا للقانون، ولا يتم استخدام أو تطوير أو تسويق الفكرة خارج نطاق المسابقة أو الخدمات المعلنة إلا وفق موافقة واتفاق واضح مع صاحبها.</p>
-        <p style={{ marginTop: 8 }}>صاحب الفكرة يستطيع مراجعة بيانات فكرته وتعديلها من قسم «أفكاري» قبل وأثناء المراجعة، وفق حالة الفكرة وما تسمح به إجراءات المسابقة.</p>
-        <p className="fk-small" style={{ marginTop: 8 }}>هذه صياغة تنظيمية مبدئية للمنصة، ويُفضّل مراجعتها واعتمادها من محامٍ مصري قبل الإطلاق التجاري النهائي.</p>
-      </div>
-
-      <section className="fk-sec">
-        <h2>📜 حقوق وخصوصية أصحاب الأفكار</h2>
-        <ul style={{ lineHeight: 2, fontSize: 14, paddingRight: 18, margin: 0 }}>
-          <li>الفكرة تظل مملوكة لصاحبها، ولا تنتقل ملكيتها لمجرد تسجيلها.</li>
-          <li>يقتصر استخدام بيانات الفكرة على أغراض المسابقة والخدمات المعلنة، مع مراعاة الموافقات والاتفاقات اللازمة.</li>
-          <li>أي تبنٍّ أو تطوير أو تسويق أو شراكة مستقبلية مع صاحب الفكرة يتم وفق موافقة واتفاق واضح ومستقل.</li>
-          <li>تُعامل البيانات الشخصية وفق الإطار القانوني المصري لحماية البيانات الشخصية، بما في ذلك قانون رقم 151 لسنة 2020 ولائحته التنفيذية رقم 816 لسنة 2025.</li>
-        </ul>
-        <div className="fk-note"><b>رسالتنا:</b> مافيش داعي للقلق من تسجيل فكرتك؛ هدف المنصة إعطاء الفكرة فرصة حقيقية، مع الحفاظ على حقوق صاحبها وعدم اعتبار التسجيل تنازلًا عن الملكية.</div>
-      </section>
-
-      <section className="fk-sec" id="register">
-        <h2>📝 تسجيل فكرة مشروع</h2>
-        <form onSubmit={submitIdea}>
-          <div className="fk-two">
-            <div><label>اسم صاحب الفكرة</label><input value={form.owner_name} onChange={setF('owner_name')} placeholder="الاسم" /></div>
-            <div><label>رقم الهاتف</label><input dir="ltr" inputMode="tel" value={form.phone} onChange={setF('phone')} placeholder="01xxxxxxxxx" /></div>
-          </div>
-          <label>اسم المشروع</label>
-          <input value={form.title} onChange={setF('title')} placeholder="مثال: مشروع إنتاج غذائي" />
-          <div className="fk-two">
-            <div><label>المحافظة</label>
-              <select value={form.governorate} onChange={setF('governorate')}>{GOVS.map((g) => <option key={g}>{g}</option>)}</select>
-            </div>
-            <div><label>الميزانية المتوقعة</label><input inputMode="numeric" value={form.budget} onChange={setF('budget')} placeholder="بالجنيه" /></div>
-          </div>
-          <label>شرح الفكرة بالتفصيل</label>
-          <textarea value={form.description} onChange={setF('description')} placeholder="اشرح المنتج أو الخدمة، العملاء، طريقة التنفيذ، وما الذي يميز المشروع..." />
-          <div className="fk-fee">
-            💰 رسوم الاشتراك: <b>10 جنيه</b><br />
-            فودافون كاش: <b dir="ltr">01099156391</b><br />
-            <span className="fk-small">الـ 10 جنيه رسوم اشتراك في المسابقة وتسجيل الفكرة واستخدام خدمات المشاركة، وليست سحبًا عشوائيًا للفوز. بيانات التحويل بتتراجع يدويًا.</span>
-            <label>رقم/مرجع التحويل (بعد التحويل)</label>
-            <input value={form.payment_ref} onChange={setF('payment_ref')} />
-          </div>
-          <button className="fk-btn" disabled={busy}>تسجيل الفكرة</button>
-          {!session && <p className="fk-small" style={{ marginTop: 8 }}>لازم تسجّل دخولك من قسم «حسابي» قبل تسجيل الفكرة.</p>}
-        </form>
-      </section> 
-
-  
-
-      <section className="fk-sec" id="inspire">
-        <h2>💡 مش عندك فكرة؟ ابدأ من هنا</h2>
-        <p className="fk-lead" style={{ fontWeight: 400 }}>مش لازم تدخل المنصة بفكرة جاهزة. تقدر تتصفح أفكار ومجالات تساعدك تستلهم فكرة مناسبة ليك، وبعدها تطورها بطريقتك وتسجل فكرتك الخاصة.</p>
-        <div className="fk-grid">
-          {CATS.map(([i, t, d]) => <div className="fk-card" key={t}><h3>{i} {t}</h3><p>{d}</p></div>)}
-        </div>
-        <div className="fk-note" style={{ background: '#fffbe6', borderColor: '#facc15' }}>✨ <b>الأهم:</b> الأفكار الموجودة هنا للإلهام فقط، وليست مِلكًا للمنصة. لو طورت فكرة خاصة بك، سجلها باسمك واحتفظ بتفاصيلها وحقوقك.</div>
-        <button className="fk-btn o" onClick={() => go('register')}>وجدت فكرة؟ سجّل فكرتك</button>
-      </section>
-
-      <section className="fk-sec" id="bank">
-        <h2>💡 الأفكار المنشورة</h2>
-        {bank.length === 0 && <p className="fk-empty">لا توجد أفكار منشورة حاليًا.</p>}
-        {bank.map((i) => (
-          <div className="fk-post" key={i.id}>
-            <h3>{i.title}</h3>
-            <span className="fk-tag">{i.governorate}</span>
-            <span className="fk-small">{i.owner_name}{i.budget ? ` • ميزانية ${i.budget} جنيه` : ''}</span>
-            <p style={{ marginTop: 6 }}>{i.description}</p>
-          </div>
-        ))}
-      </section>
-
-      <section className="fk-sec" id="mine">
-        <h2>📂 أفكاري</h2>
-        {!session && <p className="fk-empty">سجّل دخولك لتشوف أفكارك.</p>}
-        {session && mine.length === 0 && <p className="fk-empty">لم تسجل أفكارًا بعد.</p>}
-        {mine.map((i) => (
-          <div className="fk-post" key={i.id}>
-            <h3>{i.title}</h3>
-            <span className={'fk-tag ' + (i.status === 'approved' ? 'ok' : i.status === 'rejected' ? 'no' : '')}>{STATUS[i.status]}</span>
-            <span className="fk-tag">{i.governorate}</span>
-            {i.published && <span className="fk-tag ok">منشورة</span>}
-            <p style={{ marginTop: 6 }}>{i.description}</p>
-            {i.status === 'pending' && <button className="fk-btn r s" onClick={() => removeMine(i.id)}>حذف</button>}
-          </div>
-        ))}
-      </section>          <section className="fk-sec" id="community">
-        <h2>💬 مجتمع «فكرتك مشروعك»</h2>
-        <p className="fk-small" style={{ marginBottom: 10 }}>الدردشة متاحة للقراءة للجميع، أما إرسال الرسائل والمشاركة في الحوار فهي للمشتركين في المسابقة فقط.</p>
-        <div className="fk-chat">
-          {msgs.length === 0 && <p className="fk-empty">لا توجد رسائل بعد.</p>}
-          {msgs.map((m) => <div className="fk-msg" key={m.id}><b>{m.author}</b>{m.body}</div>)}
-        </div>
-        <form onSubmit={sendMsg}>
-          <div className="fk-two">
-            <input value={chatName} onChange={(e) => setChatName(e.target.value)} placeholder="اسمك" />
-            <input value={chatText} onChange={(e) => setChatText(e.target.value)} placeholder="اكتب رسالتك" maxLength={500} />
-          </div>
-          <button className="fk-btn g">إرسال الرسالة</button>
-          <span className="fk-small" style={{ marginRight: 8 }}>للكتابة في الدردشة يجب الاشتراك.</span>
-        </form>
-        <AdsSlot place="chat" />
-      </section>
-
-      <section className="fk-sec" id="posts">
-        <h2>📰 بوستات ومشاركات الأعضاء</h2>
-        <p className="fk-small" style={{ marginBottom: 10 }}>يمكن للجميع مشاهدة البوستات، والمشتركون فقط يمكنهم نشر بوستات ومشاركات جديدة. المنشورات تمر على موافقة الإدارة قبل النشر.</p>
-        <form onSubmit={sendPost} style={{ background: '#fffaee', padding: 12, borderRadius: 18 }}>
-          <input value={post.author} onChange={(e) => setPost({ ...post, author: e.target.value })} placeholder="اسمك" />
-          <input style={{ marginTop: 8 }} value={post.title} onChange={(e) => setPost({ ...post, title: e.target.value })} placeholder="عنوان البوست" />
-          <textarea style={{ marginTop: 8 }} value={post.body} onChange={(e) => setPost({ ...post, body: e.target.value })} placeholder="اكتب مشاركتك أو فكرتك أو تجربتك..." />
-          <button className="fk-btn">نشر المشاركة</button>
-          <span className="fk-small" style={{ marginRight: 8 }}>لنشر بوست يجب الاشتراك.</span>
-        </form>
-        {posts.length === 0 && <p className="fk-empty" style={{ marginTop: 10 }}>لا توجد بوستات بعد.</p>}
-        {posts.map((p) => (
-          <div className="fk-post" key={p.id}><h3>{p.title}</h3><span className="fk-small">{p.author}</span><p style={{ marginTop: 6 }}>{p.body}</p></div>
-        ))}
-        <AdsSlot place="posts" />
-      </section>           {isAdmin && (
-        <section className="fk-sec" id="admin">
-          <h2>⚙️ تحكم المدير</h2>
-          <h3 style={{ margin: '8px 0' }}>الأفكار والاشتراكات</h3>
-          {adminEntries.length === 0 && <p className="fk-empty">لا توجد أفكار.</p>}
-          {adminEntries.map((i) => (
-            <div className="fk-post" key={i.id}>
-              <h3>{i.title}</h3>
-              <span className={'fk-tag ' + (i.status === 'approved' ? 'ok' : i.status === 'rejected' ? 'no' : '')}>{STATUS[i.status]}</span>
-              {i.published && <span className="fk-tag ok">منشورة</span>}
-              <p className="fk-small" style={{ lineHeight: 1.9 }}>
-                {i.owner_name} • {i.governorate} • <span dir="ltr">{i.phone}</span><br />مرجع التحويل: <b dir="ltr">{i.payment_ref}</b>
-              </p>
-              <p style={{ marginTop: 6 }}>{i.description}</p>
-              <button className="fk-btn g s" onClick={() => upd('idea_entries', i.id, { status: 'approved' })}>قبول الاشتراك</button>
-              <button className="fk-btn r s" onClick={() => upd('idea_entries', i.id, { status: 'rejected', published: false })}>رفض</button>
-              {i.status === 'approved' && (
-                <button className="fk-btn s" onClick={() => upd('idea_entries', i.id, { published: !i.published })}>{i.published ? 'إخفاء' : 'نشر في البنك'}</button>
-              )}
-              <button className="fk-btn r s" onClick={() => del('idea_entries', i.id)}>حذف</button>
-            </div>
-          ))}
-          <h3 style={{ margin: '16px 0 8px' }}>بوستات تنتظر الموافقة</h3>
-          {adminPosts.length === 0 && <p className="fk-empty">لا توجد بوستات معلقة.</p>}
-          {adminPosts.map((p) => (
-            <div className="fk-post" key={p.id}>
-              <h3>{p.title}</h3><span className="fk-small">{p.author}</span>
-              <p style={{ marginTop: 6 }}>{p.body}</p>
-              <button className="fk-btn g s" onClick={() => upd('community_posts', p.id, { published: true })}>نشر</button>
-              <button className="fk-btn r s" onClick={() => del('community_posts', p.id)}>حذف</button>
-            </div>
-          ))}
-          <AdsAdmin />
-        </section>
-      )}
-
-      <section className="fk-sec" id="share">
-        <h2>📣 المشاركة في عرض منصة «فكرتك مشروعك»</h2>
-        <p style={{ fontSize: 14, lineHeight: 1.9 }}>المنصة مفتوحة للمشاركة والتعريف بالفكرة من خلال أصحاب الأفكار والمشروعات والمشاركين والداعمين، بهدف نشر فكرة المنصة والوصول إلى أكبر عدد من الشباب وأصحاب المشروعات في جميع المحافظات.</p>
-        <p className="fk-lead" style={{ margin: '10px 0 4px' }}>كيف تشارك؟</p>
-        <ul style={{ lineHeight: 2, fontSize: 14, paddingRight: 18, margin: 0 }}>
-          <li>شارك رابط المنصة مع أصحاب الأفكار والمشروعات.</li>
-          <li>عرّف الآخرين بفكرة «من فكرة إلى مشروع».</li>
-          <li>شارك في عرض تجربتك أو مشروعك أو فكرتك على المنصة.</li>
-          <li>ساهم في الوصول إلى أفكار ومشروعات مميزة من مختلف المحافظات.</li>
-          <li>شارك المنشورات والإعلانات المسموح بها على وسائل التواصل الاجتماعي.</li>
-        </ul>
-        <button className="fk-btn" onClick={share}>شارك رابط المنصة</button>
-        <p className="fk-small" style={{ marginTop: 10 }}>المشاركة في التعريف بالمنصة لا تعني انتقال ملكية أي فكرة أو مشروع إلى المنصة، وتظل حقوق أصحاب الأفكار والمشروعات محفوظة وفقًا للقانون والاتفاقات المعلنة.</p>
-      </section> </div>
-  )
+    if (!supabase) { setLoading(false); return; }
+    supabase.auth.getSession().then(({ data }) => { setUser(data.session?.user ?? null); setLoading(false); });
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => setUser(session?.user ?? null));
+    return () => listener.subscription.unsubscribe();
+  }, []);
+  if (loading) return <div className="loading">جاري التحميل...</div>;
+  if (!user) return <AuthScreen onAuth={setUser}/>;
+  return <Dashboard user={user} onLogout={async()=>{await supabase.auth.signOut();setUser(null)}}/>;
 }
