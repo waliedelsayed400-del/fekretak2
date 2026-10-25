@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
-import App from './Fekretak7';
+import App from './Fekretak8';
 import './styles.css';
 
 function showErr(msg) {
