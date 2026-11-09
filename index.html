@@ -2,6 +2,8 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="theme-color" content="#1e3a8a"/>
+<meta name="color-scheme" content="light"/>
 <title>فكرتك مشروعك | من فكرة إلى مشروع</title>
 <meta name="description" content="منصة تكتشف أصحاب الأفكار والمشروعات الواعدة من كل محافظات مصر. سجّل فكرتك برقم موبايلك وادخل المنافسة."/>
 <meta property="og:type" content="website"/>
@@ -18,5 +20,21 @@
 <meta name="twitter:description" content="سجّل فكرتك برقم موبايلك وادخل المنافسة على مستوى الجمهورية."/>
 <meta name="twitter:image" content="https://fekretak2.pages.dev/og.png"/>
 </head>
-<body><div id="root"></div><script type="module" src="/src/main.jsx"></script></body>
+<body style="margin:0">
+<div id="root"><div id="fk-boot" style="font-family:Tahoma,Arial,sans-serif;text-align:center;padding:60px 20px;color:#1e3a8a;direction:rtl"><div style="font-size:56px">💡</div><div style="font-size:22px;font-weight:bold">فكرتك مشروعك</div><div style="margin-top:8px;color:#475569">جارٍ التحميل...</div></div></div>
+<noscript><p style="text-align:center;font-family:Tahoma,Arial,sans-serif;padding:20px">لازم تفعّل JavaScript في المتصفح عشان الموقع يشتغل.</p></noscript>
+<script nomodule>document.getElementById('root').innerHTML='<div style="font-family:Tahoma,Arial,sans-serif;text-align:center;padding:40px 20px;direction:rtl">⚠️ المتصفح اللي على جهازك قديم ومش بيشغّل الموقع.<br/>حدّث المتصفح من متجر التطبيقات أو افتح الرابط من Chrome.</div>';</script>
+<script>
+(function () {
+  function say(extra) {
+    var b = document.getElementById('fk-boot');
+    if (!b) return;
+    b.innerHTML = '<div style="font-size:40px">⚠️</div><div style="font-size:18px;font-weight:bold">الموقع مش قادر يفتح على جهازك</div><div style="margin:10px 0;color:#475569;line-height:1.9">اتأكد من الإنترنت، أو حدّث المتصفح، أو افتح الرابط من Chrome.</div><button style="padding:10px 18px;border:0;border-radius:12px;background:#1e3a8a;color:#fff;font-size:15px" onclick="location.reload()">إعادة المحاولة</button>' + (extra ? '<div dir="ltr" style="margin-top:14px;font-size:11px;color:#94a3b8">' + String(extra).slice(0, 160) + '</div>' : '');
+  }
+  window.addEventListener('error', function (e) { say(e && e.message); }, true);
+  setTimeout(function () { say(''); }, 15000);
+})();
+</script>
+<script type="module" src="/src/main.jsx"></script>
+</body>
 </html>
