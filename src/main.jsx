@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import App from './Fekretak14';
+import App from './Fekretak15';
 import './styles.css';
 
 function showErr(msg) {
